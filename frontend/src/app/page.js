@@ -3,11 +3,7 @@ import Link from 'next/link';
 async function getPosts() {
   try {
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/posts`, { cache: 'no-store' });
-    
-    if (!res.ok) {
-      throw new Error('Veri çekilemedi');
-    }
-    
+    if (!res.ok) throw new Error('Veri çekilemedi');
     return res.json();
   } catch (error) {
     console.error("Hata:", error);
@@ -15,12 +11,21 @@ async function getPosts() {
   }
 }
 
-export default async function Home() {
+export default async function Home({ searchParams }) {
   const posts = await getPosts();
+  
+  const resolvedParams = await searchParams;
+  const seciliKategori = resolvedParams.kategori || 'Tümü';
+
+  const aktifKategoriler = ['Tümü', ...new Set(posts.map(post => post.kategori_adi).filter(Boolean))];
+
+  const filtrelenmisYazilar = seciliKategori === 'Tümü' 
+    ? posts 
+    : posts.filter(post => post.kategori_adi === seciliKategori);
 
   return (
     <main className="min-h-screen bg-[#fafafa] text-gray-800 flex flex-col items-center py-16">
-      <div className="text-center mb-16">
+      <div className="text-center mb-10">
         <h1 className="text-4xl font-light tracking-widest uppercase mb-4">
           Son Yazılar
         </h1>
@@ -29,13 +34,29 @@ export default async function Home() {
         </p>
       </div>
 
+      <div className="flex flex-wrap justify-center gap-4 mb-16 px-4">
+        {aktifKategoriler.map((kategori, index) => (
+          <Link 
+            key={index}
+            href={kategori === 'Tümü' ? '/' : `/?kategori=${kategori}`}
+            className={`px-6 py-2 text-xs uppercase tracking-widest transition-all duration-300 border ${
+              seciliKategori === kategori 
+                ? 'bg-gray-900 text-white border-gray-900' 
+                : 'bg-white text-gray-500 border-gray-200 hover:border-gray-900 hover:text-gray-900'
+            }`}
+          >
+            {kategori}
+          </Link>
+        ))}
+      </div>
+
       <div className="max-w-5xl w-full px-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {posts.length === 0 ? (
-          <p className="text-center text-gray-500 col-span-full">Henüz yazı eklenmemiş.</p>
+        {filtrelenmisYazilar.length === 0 ? (
+          <p className="text-center text-gray-500 col-span-full">Bu kategoride henüz yazı yok.</p>
         ) : (
-          posts.map((post) => (
-            <Link href={`/yazi/${post.slug}`} key={post.id} className="group">
-              <article className="bg-white border border-gray-100 p-6 hover:shadow-lg transition-all duration-300 h-full flex flex-col cursor-pointer">
+          filtrelenmisYazilar.map((post) => (
+            <Link href={`/yazi/${post.slug}`} key={post.id} className="group flex">
+              <article className="w-full bg-white border border-gray-100 p-6 hover:shadow-lg transition-all duration-300 flex flex-col cursor-pointer">
                 <span className="text-xs uppercase tracking-widest text-gray-400 mb-2 block">
                   {post.kategori_adi || 'Genel'}
                 </span>
@@ -43,7 +64,7 @@ export default async function Home() {
                   {post.baslik}
                 </h2>
                 <p className="text-sm text-gray-600 line-clamp-3 mb-4 flex-grow">
-                  {post.icerik}
+                  {post.icerik.replace(/<[^>]*>?/gm, '')}
                 </p>
                 <div className="text-xs text-gray-400 mt-auto pt-4 border-t border-gray-50">
                   {new Date(post.olusturulma_tarihi).toLocaleDateString('tr-TR')}

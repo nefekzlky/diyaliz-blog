@@ -36,9 +36,10 @@ export default async function PostDetail({ params }) {
             <span>{new Date(post.olusturulma_tarihi).toLocaleDateString('tr-TR')}</span>
           </div>
         </div>
-        <div className="prose prose-lg text-gray-600 max-w-none leading-relaxed font-serif">
-          <p>{post.icerik}</p>
-        </div>
+        <div 
+          className="prose prose-lg text-gray-600 max-w-none leading-relaxed font-serif prose-img:rounded-xl prose-img:mx-auto prose-img:shadow-md"
+          dangerouslySetInnerHTML={{ __html: post.icerik }} 
+        />
         <div className="mt-16 pt-8 text-center">
           <Link href="/" className="text-sm uppercase tracking-widest text-gray-500 hover:text-gray-900 transition-colors">
             &larr; Ana Sayfaya Dön
