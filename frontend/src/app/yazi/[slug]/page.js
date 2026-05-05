@@ -22,7 +22,7 @@ export default async function PostDetail({ params }) {
 
   return (
     <main className="min-h-screen bg-[#fafafa] text-gray-800 py-16 px-4">
-      <article className="max-w-3xl mx-auto bg-white border border-gray-100 p-8 md:p-16 shadow-sm">
+      <article className="max-w-4xl mx-auto bg-white border border-gray-100 p-8 md:p-16 shadow-sm">
         <div className="mb-12 text-center border-b border-gray-100 pb-8">
           <span className="text-xs uppercase tracking-widest text-gray-400 block mb-4">
             {post.kategori_adi || 'Genel'}
