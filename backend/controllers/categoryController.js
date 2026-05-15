@@ -35,4 +35,17 @@ const createCategory = async (req, res) => {
   }
 };
 
-module.exports = { getCategories, createCategory };
+const deleteCategory = async (req, res) => {
+  try {
+    const { id } = req.params;
+    await pool.query('UPDATE posts SET kategori_id = NULL WHERE kategori_id = ?', [id]);
+    await pool.query('DELETE FROM categories WHERE id = ?', [id]);
+    res.status(200).json({ message: 'Kategori silindi' });
+  } catch (error) {
+    console.error('Kategori silinirken hata:', error);
+    res.status(500).json({ message: 'Kategori silinemedi' });
+  }
+};
+
+
+module.exports = { getCategories, createCategory, deleteCategory };

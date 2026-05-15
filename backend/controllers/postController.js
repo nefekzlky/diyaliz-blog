@@ -62,4 +62,32 @@ const getPostBySlug = async (req, res) => {
   }
 };
 
-module.exports = { createPost, getPosts, getPostBySlug };
+const deletePost = async (req, res) => {
+  try {
+    const { id } = req.params;
+    await pool.query('DELETE FROM posts WHERE id = ?', [id]);
+    res.status(200).json({ message: 'Yazı başarıyla silindi' });
+  } catch (error) {
+    console.error('Yazı silinirken hata:', error);
+    res.status(500).json({ message: 'Yazı silinemedi' });
+  }
+};
+
+const updatePost = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { baslik, icerik, kategori_id } = req.body;
+    
+    await pool.query(
+      'UPDATE posts SET baslik = ?, icerik = ?, kategori_id = ? WHERE id = ?',
+      [baslik, icerik, kategori_id || null, id]
+    );
+    res.status(200).json({ message: 'Yazı başarıyla güncellendi' });
+  } catch (error) {
+    console.error('Yazı güncellenirken hata:', error);
+    res.status(500).json({ message: 'Yazı güncellenemedi' });
+  }
+};
+
+
+module.exports = { getPosts, getPostBySlug, createPost, deletePost, updatePost };

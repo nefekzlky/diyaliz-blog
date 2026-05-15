@@ -4,6 +4,8 @@ require('dotenv').config();
 
 const categoryRoutes = require('./routes/categoryRoutes'); 
 const postRoutes = require('./routes/postRoutes');
+const settingRoutes = require('./routes/settingRoutes');
+
 
 const app = express();
 
@@ -12,6 +14,8 @@ app.use(express.json());
 
 app.use('/api/categories', categoryRoutes); 
 app.use('/api/posts', postRoutes);
+app.use('/api/settings', settingRoutes);
+
 
 app.get('/', (req, res) => {
   res.send('Diyaliz Blog Backend Sunucusu Çalışıyor!');

@@ -128,7 +128,7 @@ Bu yapı sayesinde proje daha kolay bakım yapılabilir, performanslı ve gerçe
 
 ## 👨‍💻 Geliştirici
 
-**[Ad Soyad]**
+**Necmettin Efe KIZILKAYA**
 
 - 🔗 LinkedIn: `https://www.linkedin.com/in/necmettinefekizilkaya/`
 
