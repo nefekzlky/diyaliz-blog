@@ -30,11 +30,11 @@ export default async function PostDetail({ params }) {
           <h1 className="text-3xl md:text-5xl font-medium text-gray-900 mb-6 leading-tight">
             {post.baslik}
           </h1>
-          <div className="text-sm text-gray-400 flex justify-center items-center gap-4 uppercase tracking-wider font-light">
-            <span>{post.yazar_adi}</span>
-            <span>&bull;</span>
+          
+          <div className="text-sm text-gray-400 flex justify-center items-center uppercase tracking-wider font-light">
             <span>{new Date(post.olusturulma_tarihi).toLocaleDateString('tr-TR')}</span>
           </div>
+
         </div>
         <div 
           className="prose prose-lg text-gray-600 max-w-none leading-relaxed font-serif prose-img:rounded-xl prose-img:mx-auto prose-img:shadow-md"
