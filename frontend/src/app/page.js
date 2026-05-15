@@ -54,24 +54,32 @@ export default async function Home({ searchParams }) {
         {filtrelenmisYazilar.length === 0 ? (
           <p className="text-center text-gray-500 col-span-full">Bu kategoride henüz yazı yok.</p>
         ) : (
-          filtrelenmisYazilar.map((post) => (
-            <Link href={`/yazi/${post.slug}`} key={post.id} className="group flex">
-              <article className="w-full bg-white border border-gray-100 p-6 hover:shadow-lg transition-all duration-300 flex flex-col cursor-pointer">
-                <span className="text-xs uppercase tracking-widest text-gray-400 mb-2 block">
-                  {post.kategori_adi || 'Genel'}
-                </span>
-                <h2 className="text-xl font-medium text-gray-900 mb-3 group-hover:text-gray-500 transition-colors">
-                  {post.baslik}
-                </h2>
-                <p className="text-sm text-gray-600 line-clamp-3 mb-4 flex-grow">
-                  {post.icerik.replace(/<[^>]*>?/gm, '')}
-                </p>
-                <div className="text-xs text-gray-400 mt-auto pt-4 border-t border-gray-50">
-                  {new Date(post.olusturulma_tarihi).toLocaleDateString('tr-TR')}
-                </div>
-              </article>
-            </Link>
-          ))
+          filtrelenmisYazilar.map((post) => {
+            // Regex motoru: Önce HTML etiketlerini, sonra &nbsp; boşluklarını, en son da diğer anlamsız sembolleri temizler
+            const temizIcerik = post.icerik
+              .replace(/<[^>]+>/g, '') 
+              .replace(/&nbsp;/g, ' ') 
+              .replace(/&[a-z]+;/g, '');
+
+            return (
+              <Link href={`/yazi/${post.slug}`} key={post.id} className="group flex">
+                <article className="w-full bg-white border border-gray-100 p-6 hover:shadow-lg transition-all duration-300 flex flex-col cursor-pointer">
+                  <span className="text-xs uppercase tracking-widest text-gray-400 mb-2 block">
+                    {post.kategori_adi || 'Genel'}
+                  </span>
+                  <h2 className="text-xl font-medium text-gray-900 mb-3 group-hover:text-gray-500 transition-colors">
+                    {post.baslik}
+                  </h2>
+                  <p className="text-sm text-gray-600 line-clamp-3 mb-4 flex-grow">
+                    {temizIcerik}
+                  </p>
+                  <div className="text-xs text-gray-400 mt-auto pt-4 border-t border-gray-50">
+                    {new Date(post.olusturulma_tarihi).toLocaleDateString('tr-TR')}
+                  </div>
+                </article>
+              </Link>
+            );
+          })
         )}
       </div>
     </main>

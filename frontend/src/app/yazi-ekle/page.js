@@ -26,25 +26,25 @@ export default function CreatePost() {
   });
 
   useEffect(() => {
-    const authCookie = localStorage.getItem('diyaliz_admin_auth');
-    if (authCookie === 'true') {
+    if (localStorage.getItem('diyaliz_admin_auth') === 'true') {
       setIsAuthenticated(true);
       fetchCategories();
     }
     setIsChecking(false);
   }, []);
 
-  const fetchCategories = () => {
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/categories`)
-      .then(res => res.json())
-      .then(data => {
-        setCategories(data);
-        if (data.length > 0) setFormData(prev => ({ ...prev, kategori_id: data[0].id }));
-      })
-      .catch(err => console.error(err));
+  const fetchCategories = async () => {
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/categories`);
+      if (!res.ok) return;
+      const data = await res.json();
+      setCategories(data);
+      if (data.length > 0) setFormData(prev => ({ ...prev, kategori_id: data[0].id }));
+    } catch (err) {
+      console.error("Kategoriler çekilemedi:", err);
+    }
   };
 
-  // Cloudinary Resim Yükleme Entegrasyonu
   const imageHandler = () => {
     const input = document.createElement('input');
     input.setAttribute('type', 'file');
@@ -73,7 +73,6 @@ export default function CreatePost() {
     };
   };
 
-  // Editör Araç Çubuğu ve Modüller
   const modules = {
     toolbar: {
       container: [
@@ -84,58 +83,79 @@ export default function CreatePost() {
         ['link', 'image'],
         ['clean']
       ],
-      handlers: {
-        image: imageHandler
-      }
+      handlers: { image: imageHandler }
     }
   };
 
-  const handleLogin = (e) => {
+  // Güvenlik açığı kapatıldı, Backend API'sine bağlandı
+  const handleLogin = async (e) => {
     e.preventDefault();
-    if (passwordInput === process.env.NEXT_PUBLIC_ADMIN_PASS) {
-      setIsAuthenticated(true);
-      localStorage.setItem('diyaliz_admin_auth', 'true');
-      fetchCategories();
-    } else {
-      alert("Hatalı parola!");
-      setPasswordInput('');
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: passwordInput })
+      });
+
+      if (res.ok) {
+        setIsAuthenticated(true);
+        localStorage.setItem('diyaliz_admin_auth', 'true');
+        fetchCategories();
+      } else {
+        alert("Hatalı parola!");
+        setPasswordInput('');
+      }
+    } catch (error) {
+      console.error("Giriş hatası:", error);
     }
   };
 
+  // Çökme hatası giderildi ve güvenli fetch yapısı kuruldu
   const handleSubmit = async (e) => {
     e.preventDefault(); 
     try {
       let finalCategoryId = formData.kategori_id;
       
+      // NOT: Henüz backend tarafında kategori ekleme API'si (POST /categories) yazmadığımız için,
+      // şimdilik var olan kategorilerden birini seçerek test et.
       if (isCreatingNewCategory && newCategoryName.trim() !== '') {
         const catRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/categories`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ kategori_adi: newCategoryName })
         });
-        const newCat = await catRes.json();
-        finalCategoryId = newCat.insertId; 
+        
+        if (catRes.ok) {
+          const newCat = await catRes.json();
+          finalCategoryId = newCat.insertId; 
+        }
       }
 
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/posts`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...formData, kategori_id: finalCategoryId }),
+        body: JSON.stringify({ ...formData, kategori_id: finalCategoryId || null }),
       });
 
-      if (res.ok) {
-        router.push('/'); 
+      if (!res.ok) {
+        const errText = await res.text();
+        console.error("Sunucu Hatası:", errText);
+        alert("Yazı eklenirken hata oluştu!");
+        return;
+      }
+
+      const data = await res.json();
+      if (data.success) {
+        router.push('/admin'); // Eklendikten sonra admin paneline dönmesi daha mantıklı
         router.refresh(); 
       }
     } catch (error) {
-      console.error("Hata:", error);
+      console.error("İstek Hatası:", error);
     }
   };
 
-  // Kalkan Bekleme Ekranı
   if (isChecking) return <div className="min-h-screen bg-[#fafafa]"></div>;
 
-  // Kalkan Giriş Ekranı
   if (!isAuthenticated) {
     return (
       <main className="min-h-screen bg-[#fafafa] flex items-center justify-center px-4">
@@ -157,7 +177,6 @@ export default function CreatePost() {
     );
   }
 
-  // Asıl İçerik Ekleme Formu
   return (
     <main className="min-h-screen bg-[#fafafa] flex flex-col items-center py-16 px-4">
       <div className="bg-white border border-gray-100 p-8 md:p-12 w-full max-w-5xl shadow-sm">

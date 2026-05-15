@@ -1,6 +1,19 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
+export async function generateMetadata({ params }) {
+  const resolvedParams = await params;
+  const post = await getPost(resolvedParams.slug);
+
+  if (!post) return { title: 'Yazı Bulunamadı' };
+
+  return {
+    title: `${post.baslik} | Diyaliz Blog`,
+    description: post.icerik.substring(0, 160).replace(/<[^>]*>/g, ''), // İlk 160 karakteri al ve HTML etiketlerini temizle
+  };
+}
+
+
 async function getPost(slug) {
   try {
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/posts/${slug}`, { cache: 'no-store' });

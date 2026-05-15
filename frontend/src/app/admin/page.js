@@ -87,15 +87,28 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleLogin = (e) => {
+  // BURASI GÜNCELLENDİ (Backend API'ye bağlandı)
+  const handleLogin = async (e) => {
     e.preventDefault();
-    if (passwordInput === process.env.NEXT_PUBLIC_ADMIN_PASS) {
-      setIsAuthenticated(true);
-      localStorage.setItem('diyaliz_admin_auth', 'true');
-      fetchData();
-    } else {
-      alert("Hatalı parola!");
-      setPasswordInput('');
+    
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: passwordInput }) 
+      });
+
+      if (res.ok) {
+        setIsAuthenticated(true);
+        localStorage.setItem('diyaliz_admin_auth', 'true');
+        fetchData();
+      } else {
+        alert("Hatalı parola, tekrar dene!");
+        setPasswordInput('');
+      }
+    } catch (error) {
+      console.error("Giriş hatası:", error);
+      alert("Sunucu ile iletişim kurulamadı.");
     }
   };
 
